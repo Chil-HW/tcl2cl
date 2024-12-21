@@ -43,7 +43,8 @@
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages lisp-xyz)
-  #:use-module (gnu packages lisp-check))
+  #:use-module (gnu packages lisp-check)
+  #:use-module (gnu packages tcl))
 
 (define vcs-file?
   ;; Return true if the given file is under version control.
@@ -62,8 +63,11 @@
     (list sbcl
           cl-lisp-unit2
           cl-log4cl
+          cl-smug
           ;; Building the manual
-          autoconf automake texinfo))
+          autoconf automake texinfo
+          ;; Running TCL execution tests
+          tcl))
    (inputs
     (list cl-alexandria
           cl-slime-swank

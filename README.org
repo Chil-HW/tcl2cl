@@ -19,6 +19,9 @@ Read a Tcl/Tk script and convert it to a Common Lisp script.
     - Provides structured logging facilities.
   * [[https://github.com/AccelerationNet/lisp-unit2][~lisp-unit2~]]
     - Only needed for testing!
+  * TCL 8.6
+    - Only needed for testing.
+      This is used to ensure the scripts that Tcl2CL produces are roughly equivalent to what TCL would output.
 
 ** Building
 Tcl2CL builds using the standard ASDF build system.
