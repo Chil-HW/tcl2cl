@@ -59,6 +59,140 @@ file, parse it, and output an equivalent ANSI Common Lisp program.
 When a procedure that cannot be resolved is encountered, the procedure
 is output literally, and the user is responsible for correct handling.
 
+@node Parsing
+@chapter Parsing
+@cindex parsing
+Tcl does not have an official (E)BNF grammar that describes it.  The
+closest single official item that comes close to describing the syntax
+and semantics of Tcl is
+@url{https://www.tcl.tk/man/tcl8.6.13/TclCmd/Tcl.htm,TCL's @command{man}
+page}.
+
+@quotation NOTE
+Tcl's @command{man} page is in section @code{n}.  So @command{man -s n
+tcl} should find it for you.
+
+@code{man tclsh (1)}
+@code{man tcl (n)}
+@end quotation
+
+A @emph{subset} of Tcl's man page is reproduced here.
+
+@enumerate
+@item
+@b{Commands.}
+Any Tcl script is a string that contains one or more commands.
+Semicolons and newlines separate commands.  Closing brackets are command
+terminators during command substition, unless quoted.
+
+@item
+@b{Evaluation.}
+Tcl breaks the command into words and performs substitutions.  The first
+word is taken to be a command procedure, which carries out the command.
+Once all substitions are complete, the substituted words of the command
+are passed to the command procedure.  The command procedure interprets
+these words to achieve its goal.
+
+@item
+@b{Words.}
+Words are an arbitrary-length string of characters, separated by any
+amount of whitespace, except for newlines.  Newlines are command
+separators.
+
+@item
+@b{Double quotes.}
+If the first character of a word is a double-quote @code{"}, the word
+will be terminated by the @emph{next} unescaped double-quote character.
+If any special characters (semicolors, closing brackets, or whitespace
+characters (including newlines)) appear inside the quotes, they are
+treated as normal characters and included in the word.  Command,
+variable, and backslash substitution are performed on characters inside
+the quotes.  At the end, the double-quotes are @emph{not} retained as
+part of the word!
+
+@quotation NOTE
+Double-quotes in Tcl behave quite similarly to double-quotes in Bash!
+@end quotation
+
+@item
+@b{Argument expansion.}
+
+@item
+@b{Braces.}
+
+@quotation NOTE
+Braces in Tcl behave quite similarly to single-quotes in Bash!
+@end quotation
+
+@item
+@b{Command substitution.}
+
+@item
+@b{Variable substition.}
+
+@item
+@b{Backslash substition.}
+
+@item
+@b{Comments.}
+
+@item
+@b{Order of Substition.}
+
+@item
+@b{Substition and word boundaries.}
+
+@end enumerate
+
+
+Further, the community-written @url{https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form,EBNF} grammar from the @url{https://wiki.tcl-lang.org/page/BNF+for+Tcl,Tcl WIKI} is completely reproduced below.
+
+The syntax below is mostly EBNF, except that @samp{[]}, @samp{\lbrace \rbrace}, @samp{?}, @samp{*}, and @samp{+} have been borrowed from regular expressions and @samp{,} is optional.
+In addition, @samp{-} may be used to remove characters from a non-terminal composed only of terminals (set difference).
+Note that the trailing @samp{;} in each of the productions terminates the production and is @emph{not} part of the Tcl code.
+@verbatim
+script = whitespace* ( command ( terminator script )? | comment ( '\n' script )? )? ;
+
+command = word ( whitespace+ word )* whitespace* ;
+commment = '#' ( '\\' character | ( character - '\n' ) )* ;
+
+word = quote | expansion | brace | ( subcommand | variable | escape-sequence | ( character - space - '\\' ) )+ ;
+
+quote     = '"' ( bracket | variable | continuation | escape-sequence | ( character - '"' ) )* '"' ;
+expansion = '{*}' word ;
+brace     = '{' ( brace | continuation | '\\' ( character - '\n' ) | ( character - '}' ) )* '}' ;
+
+bracket         = '[' script-bracket ']' ;
+script-bracket  = whitespace* ( command-bracket ( terminator script-bracket )? | comment ( '\n' script-bracket )? )? ;
+command-bracket = word-bracket ( whitespace+ word-bracket )* whitespace* ;
+word-bracket    = quote | expansion | brace | ( bracket | variable | escape-sequence | ( character - space - '\\' - ']' ) )+ ;
+
+variable       = '$' ( name index? | variable-brace ) ;
+name           = ( [0-9A-Z_a-z] | ':' ':'+ )+ ;
+index          = '(' ( subcommand | variable | continuation | escape-sequence | ( character - ')' ) )* ')' ;
+variable-brace = '{' ( name-brace index-brace | ( character - '}' )* ) '}' ;
+name-brace     = ( character - '(' - '}' )* ;
+index-brace    = '(' ( character - '}' )* ')' ;
+
+escape-sequence = '\\' ( octal{1,3} | 'x' hex+ | 'u' hex{1,4} | 'U' hex{1,8} | ( character - '\n' ) ) ;
+
+whitespace   = space | continuation ;
+continuation = '\\\n' space* ;
+
+terminator = '\n' | ';' ;
+space      = ' ' | '\f' | '\r' | '\t' | '\v' ;
+octal      = [0-7] ;
+hex        = [0-9A-Fa-f] ;
+character  = [\U0000 - \U10FFF] ;
+
+# Taken from errata
+variable-brace       = '{' array-brace | name-brace '}' ;
+array-brace          = array-name-brace? index-brace? ;
+array-name-brace     = ( character - '(' - '}' )+
+index-brace          = '(' (character - '}')* ')' ;
+name-brace           = ( character - '}' )* ;
+@end verbatim
+
 @node Resources
 @chapter Resources
 
